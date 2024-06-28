@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-nginx-loadbalancer-service
+  labels:
+    app: app1-nginx
+  annotations:
+#Important Note:  Need to add health check path annotations in service level if we are planning to use multiple targets in a load balancer    
+    alb.ingress.kubernetes.io/healthcheck-path: /app1/index.html
+    external-dns.alpha.kubernetes.io/hostname: extdns-k8s-service-demo101.beitcloud.com
+    # # Traffic Routing
+    # service.beta.kubernetes.io/aws-load-balancer-name: basics-lbc-network-lb
+    # service.beta.kubernetes.io/aws-load-balancer-type: external
+    # service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance # specifies the target type to configure for NLB. You can choose between instance and ip
+    # #service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-xxxx, mySubnet ## Subnets are auto-discovered if this annotation is not specified, see Subnet Discovery for further details.
+spec:
+  type: LoadBalancer
+  selector:
+    app: app1-nginx
+  ports:
+    - port: 80
+      targetPort: 80
+
+  
