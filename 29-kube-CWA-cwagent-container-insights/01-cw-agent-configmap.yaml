@@ -1,0 +1,46 @@
+# create configmap for cwagent config
+apiVersion: v1
+data:
+  # Configuration is in Json format. No matter what configure change you make,
+  # please keep the Json blob valid.
+  cwagentconfig.json: |
+    {
+      "logs": {
+        "metrics_collected": {
+          "kubernetes": {
+            "metrics_collection_interval": 60
+          }
+        },
+        "force_flush_interval": 5
+      }
+    }
+kind: ConfigMap
+metadata:
+  name: cwagentconfig
+  namespace: amazon-cloudwatch
+
+## GITHUB ACCOUNT FOR CloudWatch agent
+## NOTE: Use "cluster_name": "{{cluster_name}}", only for k8s cluster created on AWS EC2 instances. Ignore it when using EKS cluster
+# # Download ConfigMap for the CloudWatch agent (Download and update)
+# curl -O https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cwagent/cwagent-configmap.yaml
+# # create configmap for cwagent config
+# apiVersion: v1
+# data:
+#   # Configuration is in Json format. No matter what configure change you make,
+#   # please keep the Json blob valid.
+#   cwagentconfig.json: |
+#     {
+#       "logs": {
+#         "metrics_collected": {
+#           "kubernetes": {
+#             "cluster_name": "{{cluster_name}}",
+#             "metrics_collection_interval": 60
+#           }
+#         },
+#         "force_flush_interval": 5
+#       }
+#     }
+# kind: ConfigMap
+# metadata:
+#   name: cwagentconfig
+#   namespace: amazon-cloudwatch
