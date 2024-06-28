@@ -1,0 +1,87 @@
+
+
+
+
+###################################################################################################################
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                withCredentials([vaultString(credentialsId: 'vault-secret-text', variable: 'MYSECRET')]) {
+                  sh '''
+                    echo 'Hello World. The secret is ${MYSECRET}'
+                  '''
+                }
+                
+            }
+        }
+    }
+}
+
+####################################################################################################################
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Retrieve Credentials') {
+            steps {
+                script {
+                    withVault(
+                        vaultUrl: 'http://54.152.219.124:8200',
+                        vaultCredentialId: 'vault-jenkins-role',
+                        vaultSecrets: [
+                            [
+                                path: 'secrets/creds/vagrant',
+                                secretValues: [
+                                    [vaultKey: 'username', envVar: 'USERNAME'],
+                                    [vaultKey: 'password', envVar: 'PASSWORD']
+                                ]
+                            ]
+                        ]
+                    ) {
+                        echo "Username: ${env.USERNAME}"
+                        echo "Password: ${env.PASSWORD}"
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+######################################################################################################################
+pipeline {
+    agent any
+
+    stages {
+        stage('Retrieve Credentials') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'vault-url', variable: 'VAULT_URL')]) {
+                        withVault(
+                            vaultUrl: env.VAULT_URL,
+                            vaultCredentialId: 'vault-jenkins-role',
+                            vaultSecrets: [
+                                [
+                                    path: 'secrets/creds/vagrant',
+                                    secretValues: [
+                                        [vaultKey: 'username', envVar: 'USERNAME'],
+                                        [vaultKey: 'password', envVar: 'PASSWORD']
+                                    ]
+                                ]
+                            ]
+                        ) {
+                            echo "Username: ${env.USERNAME}"
+                            echo "Password: ${env.PASSWORD}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+

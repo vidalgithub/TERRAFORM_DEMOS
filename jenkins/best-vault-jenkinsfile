@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Retrieve Credentials') {
+            steps {
+                script {
+                    withCredentials([[$class: 'VaultUsernamePasswordCredentialBinding', credentialsId: 'vault-vagrant', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME']]) {
+                        echo "Username: ${env.USERNAME}"
+                        echo "Password: ${env.PASSWORD}"
+                    }
+                }
+            }
+        }
+    }
+}
+
+########################################################################
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Retrieve Credentials') {
+            steps {
+                script {
+                    withCredentials([[
+                            $class: 'VaultUsernamePasswordCredentialBinding', 
+                            credentialsId: 'vault-vagrant', 
+                            passwordVariable: 'PASSWORD', 
+                            usernameVariable: 'USERNAME'
+                            ]]) 
+                        {
+                        echo "Username: ${env.USERNAME}"
+                        echo "Password: ${env.PASSWORD}"
+                        }
+                }
+            }
+        }
+    }
+}
+
+#########################################################################
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Retrieve Credentials') {
+            steps {
+                script {
+                    withCredentials(
+                        [
+                            [
+                            $class: 'VaultUsernamePasswordCredentialBinding', 
+                            credentialsId: 'vault-vagrant', 
+                            passwordVariable: 'PASSWORD', 
+                            usernameVariable: 'USERNAME'
+                            ]
+                        ]
+                    ) {
+                        echo "Username: ${env.USERNAME}"
+                        echo "Password: ${env.PASSWORD}"
+                    }
+                }
+            }
+        }
+    }
+}
+
+####################################################################
+
+
