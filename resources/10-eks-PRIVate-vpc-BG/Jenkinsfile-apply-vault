@@ -18,9 +18,9 @@ pipeline {
         stage('Plan') {
             steps {
                 withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
-                   sh 'pwd;cd terraform/ ; terraform init'
-                   sh "pwd;cd terraform/ ; terraform plan -out tfplan"
-                   sh 'pwd;cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
+                   sh 'pwd;cd terraform/resources/10-eks-PRIVate-vpc-BG ; terraform init'
+                   sh "pwd;cd terraform/resources/10-eks-PRIVate-vpc-BG ; terraform plan -out tfplan"
+                   sh 'pwd;cd terraform/resources/10-eks-PRIVate-vpc-BG ; terraform show -no-color tfplan > tfplan.txt'
                 }
             }
         }
@@ -43,7 +43,7 @@ pipeline {
         stage('Apply') {
             steps {
                 withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
-                   sh "pwd;cd terraform/ ; terraform apply -input=false tfplan"
+                   sh "pwd;cd terraform/resources/10-eks-PRIVate-vpc-BG ; terraform apply -input=false tfplan"
                    sh "terraform version"
                 }
             }
