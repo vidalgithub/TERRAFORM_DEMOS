@@ -33,9 +33,9 @@ pipeline {
 
         stage('Plan Destroy') {
             steps {
-                sh 'cd terraform && terraform init'
-                sh 'cd terraform && terraform plan -destroy -out=tfplan-destroy'
-                sh 'cd terraform && terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
+                sh 'cd terraform/resources/10-eks-PRIVate-vpc-BG && terraform init'
+                sh 'cd terraform/resources/10-eks-PRIVate-vpc-BG && terraform plan -destroy -out=tfplan-destroy'
+                sh 'cd terraform/resources/10-eks-PRIVate-vpc-BG && terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
             }
         }
 
@@ -58,7 +58,7 @@ pipeline {
         stage('Destroy') {
             steps {
                 script {
-                    def destroyCommand = 'cd terraform && terraform apply -destroy -input=false tfplan-destroy'
+                    def destroyCommand = 'cd terraform/resources/10-eks-PRIVate-vpc-BG && terraform apply -destroy -input=false tfplan-destroy'
                     if (params.autoApprove) {
                         destroyCommand += ' -auto-approve'
                     }
