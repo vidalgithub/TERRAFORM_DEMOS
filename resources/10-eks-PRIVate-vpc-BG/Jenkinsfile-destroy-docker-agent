@@ -1,0 +1,76 @@
+pipeline {
+    parameters {
+        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically approve the destruction of infrastructure?')
+    }
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    }
+
+    agent {
+        docker { 
+            image 'hashicorp/terraform:1.6.0' 
+            args '-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY --entrypoint=""'  // Pass AWS credentials and reset entrypoint
+        }
+    }
+
+    stages {
+        stage('Verify Docker Setup') {
+            steps {
+                sh 'terraform --version'  // Ensure Terraform command works
+            }
+        }
+        
+        stage('Checkout') {
+            steps {
+                script {
+                    dir("terraform") {
+                        git "https://github.com/yeshwanthlm/Terraform-Jenkins.git"
+                    }
+                }
+            }
+        }
+
+        stage('Plan Destroy') {
+            steps {
+                sh 'cd terraform && terraform init'
+                sh 'cd terraform && terraform plan -destroy -out=tfplan-destroy'
+                sh 'cd terraform && terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
+            }
+        }
+
+        stage('Approval') {
+            when {
+                not {
+                    equals expected: true, actual: params.autoApprove
+                }
+            }
+
+            steps {
+                script {
+                    def plan = readFile 'terraform/tfplan-destroy.txt'
+                    input message: "Do you want to destroy the resources?",
+                          parameters: [text(name: 'Plan', description: 'Please review the destroy plan', defaultValue: plan)]
+                }
+            }
+        }
+
+        stage('Destroy') {
+            steps {
+                script {
+                    def destroyCommand = 'cd terraform && terraform apply -destroy -input=false tfplan-destroy'
+                    if (params.autoApprove) {
+                        destroyCommand += ' -auto-approve'
+                    }
+                    sh destroyCommand
+                }
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                sh 'rm -f terraform/tfplan-destroy terraform/tfplan-destroy.txt'  // Clean up the plan files
+            }
+        }
+    }
+}
