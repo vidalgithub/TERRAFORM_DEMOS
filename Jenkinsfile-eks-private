@@ -27,10 +27,9 @@ pipeline {
                 stage('Checkout') {
                     steps {
                         script {
-                            sh 'rm -rf *' // Clean workspace by removing all files
-                            sh 'mkdir -p eks' // Create the directory
+                            sh 'find . -maxdepth 1 ! -name . -exec rm -rf {} +' // Clean workspace without removing the directory
                             dir("eks") {
-                                git "https://github.com/vidalgithub/TERRAFORM_DEMOS.git"
+                                git branch: 'main', url: 'https://github.com/vidalgithub/TERRAFORM_DEMOS.git'
                                 sh 'ls -la' // List files to confirm checkout
                                 sh 'pwd' // Print working directory
                             }
