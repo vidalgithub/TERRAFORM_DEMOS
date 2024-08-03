@@ -26,6 +26,7 @@ pipeline {
 
                 stage('Checkout') {
                     steps {
+                        cleanWs() // Clean workspace before checkout
                         script {
                             dir("eks") {
                                 git "https://github.com/vidalgithub/Terraform-Jenkins.git"
