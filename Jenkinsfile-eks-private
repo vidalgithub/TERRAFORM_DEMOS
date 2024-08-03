@@ -43,9 +43,13 @@ pipeline {
             steps {
                 script {
                     dir("terraform/resources/10-eks-PRIVate-vpc-BG") {
-                        sh 'terraform init'
-                        sh 'terraform plan -out=tfplan'
-                        sh 'terraform show -no-color tfplan > tfplan.txt'
+                        sh '''
+                           pwd
+                           ls
+                           terraform init
+                           terraform plan -out=tfplan
+                           terraform show -no-color tfplan > tfplan.txt
+                        '''
                     }
                 }
             }
