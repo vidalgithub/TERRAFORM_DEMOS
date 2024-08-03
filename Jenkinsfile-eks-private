@@ -1,11 +1,21 @@
 pipeline {
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Choose action to perform')
+        choice(name: 'INFRASTRUCTURE', choices: [
+            '1-eks-private-cluster',
+            '2-AWS-LB-Controller',
+            '3-EXT-DNS',
+            '4-Metrics-Server',
+            '5-Cluster-AutoScaler',
+            '6-EBS-CSI-DRIVER',
+            '7-Argocd-Ingress'
+        ], description: 'Choose infrastructure to provision')
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run the selected action after generating plan?')
     }
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        RESOURCE_DIR          = 'eks/resources'
     }
 
     agent {
@@ -45,7 +55,31 @@ pipeline {
             }
             steps {
                 script {
-                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
+                    def infraDir
+                    switch (params.INFRASTRUCTURE) {
+                        case '1-eks-private-cluster':
+                            infraDir = '10-eks-PRIVate-vpc-BG'
+                            break
+                        case '2-AWS-LB-Controller':
+                            infraDir = '11-AWS-LBC-LOADBALANCER-CONTROLLER-install-terraform-manifests'
+                            break
+                        case '3-EXT-DNS':
+                            infraDir = '14-EXTERNAL-DNS-install-terraform-manifests'
+                            break
+                        case '4-Metrics-Server':
+                            infraDir = '27-METRICS-SERVER-tf-k8s-terraform-manifests'
+                            break
+                        case '5-Cluster-AutoScaler':
+                            infraDir = '26-CA-tf-CLUSTER-AUTOSCALER-install-terraform-manifests'
+                            break
+                        case '6-EBS-CSI-DRIVER':
+                            infraDir = '06-ebs-EBS-addon-terraform-manifests'
+                            break
+                        case '7-Argocd-Ingress':
+                            infraDir = '36-ARGOCD-service-HTTP2-AWS-LBC-Ingress'
+                            break
+                    }
+                    dir("${env.RESOURCE_DIR}/${infraDir}") {
                         sh '''
                            pwd
                            ls
@@ -64,10 +98,36 @@ pipeline {
             }
             steps {
                 script {
-                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
-                        sh 'terraform init'
-                        sh 'terraform plan -destroy -out=tfplan-destroy'
-                        sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
+                    def infraDir
+                    switch (params.INFRASTRUCTURE) {
+                        case '1-eks-private-cluster':
+                            infraDir = '10-eks-PRIVate-vpc-BG'
+                            break
+                        case '2-AWS-LB-Controller':
+                            infraDir = '11-AWS-LBC-LOADBALANCER-CONTROLLER-install-terraform-manifests'
+                            break
+                        case '3-EXT-DNS':
+                            infraDir = '14-EXTERNAL-DNS-install-terraform-manifests'
+                            break
+                        case '4-Metrics-Server':
+                            infraDir = '27-METRICS-SERVER-tf-k8s-terraform-manifests'
+                            break
+                        case '5-Cluster-AutoScaler':
+                            infraDir = '26-CA-tf-CLUSTER-AUTOSCALER-install-terraform-manifests'
+                            break
+                        case '6-EBS-CSI-DRIVER':
+                            infraDir = '06-ebs-EBS-addon-terraform-manifests'
+                            break
+                        case '7-Argocd-Ingress':
+                            infraDir = '36-ARGOCD-service-HTTP2-AWS-LBC-Ingress'
+                            break
+                    }
+                    dir("${env.RESOURCE_DIR}/${infraDir}") {
+                        sh '''
+                           terraform init
+                           terraform plan -destroy -out=tfplan-destroy
+                           terraform show -no-color tfplan-destroy > tfplan-destroy.txt
+                        '''
                     }
                 }
             }
@@ -81,7 +141,7 @@ pipeline {
             }
             steps {
                 script {
-                    def planFile = params.ACTION == 'APPLY' ? 'eks/resources/10-eks-PRIVate-vpc-BG/tfplan.txt' : 'eks/resources/10-eks-PRIVate-vpc-BG/tfplan-destroy.txt'
+                    def planFile = params.ACTION == 'APPLY' ? "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt" : "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
                     def plan = readFile planFile
                     input message: "Do you want to ${params.ACTION.toLowerCase()} the resources?",
                           parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
@@ -95,7 +155,31 @@ pipeline {
             }
             steps {
                 script {
-                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
+                    def infraDir
+                    switch (params.INFRASTRUCTURE) {
+                        case '1-eks-private-cluster':
+                            infraDir = '10-eks-PRIVate-vpc-BG'
+                            break
+                        case '2-AWS-LB-Controller':
+                            infraDir = '11-AWS-LBC-LOADBALANCER-CONTROLLER-install-terraform-manifests'
+                            break
+                        case '3-EXT-DNS':
+                            infraDir = '14-EXTERNAL-DNS-install-terraform-manifests'
+                            break
+                        case '4-Metrics-Server':
+                            infraDir = '27-METRICS-SERVER-tf-k8s-terraform-manifests'
+                            break
+                        case '5-Cluster-AutoScaler':
+                            infraDir = '26-CA-tf-CLUSTER-AUTOSCALER-install-terraform-manifests'
+                            break
+                        case '6-EBS-CSI-DRIVER':
+                            infraDir = '06-ebs-EBS-addon-terraform-manifests'
+                            break
+                        case '7-Argocd-Ingress':
+                            infraDir = '36-ARGOCD-service-HTTP2-AWS-LBC-Ingress'
+                            break
+                    }
+                    dir("${env.RESOURCE_DIR}/${infraDir}") {
                         sh 'terraform apply -input=false tfplan'
                     }
                 }
@@ -108,7 +192,31 @@ pipeline {
             }
             steps {
                 script {
-                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
+                    def infraDir
+                    switch (params.INFRASTRUCTURE) {
+                        case '1-eks-private-cluster':
+                            infraDir = '10-eks-PRIVate-vpc-BG'
+                            break
+                        case '2-AWS-LB-Controller':
+                            infraDir = '11-AWS-LBC-LOADBALANCER-CONTROLLER-install-terraform-manifests'
+                            break
+                        case '3-EXT-DNS':
+                            infraDir = '14-EXTERNAL-DNS-install-terraform-manifests'
+                            break
+                        case '4-Metrics-Server':
+                            infraDir = '27-METRICS-SERVER-tf-k8s-terraform-manifests'
+                            break
+                        case '5-Cluster-AutoScaler':
+                            infraDir = '26-CA-tf-CLUSTER-AUTOSCALER-install-terraform-manifests'
+                            break
+                        case '6-EBS-CSI-DRIVER':
+                            infraDir = '06-ebs-EBS-addon-terraform-manifests'
+                            break
+                        case '7-Argocd-Ingress':
+                            infraDir = '36-ARGOCD-service-HTTP2-AWS-LBC-Ingress'
+                            break
+                    }
+                    dir("${env.RESOURCE_DIR}/${infraDir}") {
                         sh 'terraform apply -destroy -input=false tfplan-destroy'
                     }
                 }
