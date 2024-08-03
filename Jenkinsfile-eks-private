@@ -27,7 +27,7 @@ pipeline {
                 stage('Checkout') {
                     steps {
                         script {
-                            dir("terraform") {
+                            dir("eks") {
                                 git "https://github.com/vidalgithub/Terraform-Jenkins.git"
                                 sh 'ls -la' // List files to confirm checkout
                             }
@@ -43,7 +43,7 @@ pipeline {
             }
             steps {
                 script {
-                    dir("terraform/resources/10-eks-PRIVate-vpc-BG") {
+                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
                         sh '''
                            pwd
                            ls
@@ -62,7 +62,7 @@ pipeline {
             }
             steps {
                 script {
-                    dir("terraform/resources/10-eks-PRIVate-vpc-BG") {
+                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
                         sh 'terraform init'
                         sh 'terraform plan -destroy -out=tfplan-destroy'
                         sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
@@ -79,7 +79,7 @@ pipeline {
             }
             steps {
                 script {
-                    def planFile = params.ACTION == 'APPLY' ? 'terraform/tfplan.txt' : 'terraform/tfplan-destroy.txt'
+                    def planFile = params.ACTION == 'APPLY' ? 'eks/resources/10-eks-PRIVate-vpc-BG/tfplan.txt' : 'eks/resources/10-eks-PRIVate-vpc-BG/tfplan-destroy.txt'
                     def plan = readFile planFile
                     input message: "Do you want to ${params.ACTION.toLowerCase()} the resources?",
                           parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
@@ -93,7 +93,7 @@ pipeline {
             }
             steps {
                 script {
-                    dir("terraform/resources/10-eks-PRIVate-vpc-BG") {
+                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
                         sh 'terraform apply -input=false tfplan'
                     }
                 }
@@ -106,7 +106,7 @@ pipeline {
             }
             steps {
                 script {
-                    dir("terraform/resources/10-eks-PRIVate-vpc-BG") {
+                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
                         sh 'terraform apply -destroy -input=false tfplan-destroy'
                     }
                 }
