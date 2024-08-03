@@ -6,7 +6,7 @@ data "aws_availability_zones" "available" {
 
 # Create VPC Terraform Module
 module "vpc" {
-  source = "../../../modules/bastion-host-vpc/vpc"
+  source = "../../modules/bastion-host-vpc/vpc"
   # version = "3.11.0"
   # #version = "~> 3.11"
 
