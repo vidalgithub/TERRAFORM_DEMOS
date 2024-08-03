@@ -28,12 +28,12 @@ pipeline {
                     steps {
                         //cleanWs() // Clean workspace before checkout
                         script {
-                            sh 'mkdir -p eks' // Create the directory
-                            dir("eks") {
-                                git "https://github.com/vidalgithub/Terraform-Jenkins.git"
-                                sh 'ls -la' // List files to confirm checkout
-                                sh 'pwd' // Print working directory
-                            }
+                            sh '''
+                                mkdir -p eks && cd eks // Create the directory
+                                git clone "https://github.com/vidalgithub/Terraform-Jenkins.git"
+                                pwd // Print working directory 
+                                ls -la // List files to confirm checkout
+                            '''
                         }
                     }
                 }
