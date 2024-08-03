@@ -26,14 +26,11 @@ pipeline {
 
                 stage('Checkout') {
                     steps {
-                        //cleanWs() // Clean workspace before checkout
                         script {
-                            sh '''
-                                mkdir -p eks && cd eks 
-                                git clone "https://github.com/vidalgithub/Terraform-Jenkins.git"
-                                pwd 
-                                ls -la 
-                            '''
+
+                                git "https://github.com/vidalgithub/Terraform-Jenkins.git"
+                                sh 'ls -la' // List files to confirm checkout
+
                         }
                     }
                 }
@@ -46,15 +43,16 @@ pipeline {
             }
             steps {
                 script {
-                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
+
                         sh '''
+                           cd resources/10-eks-PRIVate-vpc-BG
                            pwd
                            ls
                            terraform init
                            terraform plan -out=tfplan
                            terraform show -no-color tfplan > tfplan.txt
                         '''
-                    }
+
                 }
             }
         }
@@ -65,11 +63,12 @@ pipeline {
             }
             steps {
                 script {
-                    dir("eks/resources/10-eks-PRIVate-vpc-BG") {
-                        sh 'terraform init'
-                        sh 'terraform plan -destroy -out=tfplan-destroy'
-                        sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
-                    }
+                        sh '''
+                          cd resources/10-eks-PRIVate-vpc-BG
+                          sh 'terraform init'
+                          sh 'terraform plan -destroy -out=tfplan-destroy'
+                          sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
+                        '''
                 }
             }
         }
