@@ -13,8 +13,8 @@ pipeline {
             image 'hashicorp/terraform:1.9.3'
             args '-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY --entrypoint=""'
         }
-    }
-    */
+    }*/
+
     stages {
         stage('Terraform and Checkout') {
             parallel {
