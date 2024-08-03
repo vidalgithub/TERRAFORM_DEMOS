@@ -222,4 +222,15 @@ pipeline {
             steps {
                 script {
                     def infraDir
-                    switch (params.INFRASTRUCTURE
+                    switch (params.INFRASTRUCTURE) {
+                        case '1-eks-private-cluster':
+                            infraDir = '10-eks-PRIVate-vpc-BG'
+                            break
+                        case '2-AWS-LB-Controller':
+                            infraDir = '11-AWS-LBC-LOADBALANCER-CONTROLLER-install-terraform-manifests'
+                            break
+                        case '3-EXT-DNS':
+                            infraDir = '14-EXTERNAL-DNS-install-terraform-manifests'
+                            break
+                        case '4-Metrics-Server':
+                            infraDir = '27-METRICS-SERVER-tf
