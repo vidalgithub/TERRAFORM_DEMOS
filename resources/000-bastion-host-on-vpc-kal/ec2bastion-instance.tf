@@ -1,7 +1,7 @@
 # AWS EC2 Instance Terraform Module
 # Bastion Host - EC2 Instance that will be created in VPC Public Subnet
 module "ec2_public" {
-  source  = "../../../modules/bastion-host-vpc/bastion-host-kalyan"
+  source  = "../../modules/bastion-host-vpc/bastion-host-kalyan"
   #version = "~> 3.0"
 #   version = "3.3.0"
 
