@@ -1,7 +1,14 @@
 pipeline {
-    agent any
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Choose action to perform')
+        choice(name: 'INFRASTRUCTURE', choices: [
+            '1-eks-private-cluster',
+            '2-AWS-LB-Controller',
+            '3-EXT-DNS',
+            '4-Metrics-Server',
+            '5-Cluster-AutoScaler',
+            '6-EBS-CSI-DRIVER'
+        ], description: 'Choose infrastructure to provision')
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run the selected action after generating plan?')
     }
     environment {
@@ -9,192 +16,183 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         RESOURCE_DIR          = 'eks/resources'
     }
+    agent any
+
     stages {
-        stage('Initialize and Checkout') {
+        stage('Checkout') {
             steps {
                 script {
-                    // Clean workspace without removing the directory
-                    sh 'find . -maxdepth 1 ! -name . -exec rm -rf {} +'
-                    // Checkout the Terraform repository
+                    sh 'find . -maxdepth 1 ! -name . -exec rm -rf {} +' // Clean workspace without removing the directory
                     dir("eks") {
                         git branch: 'main', url: 'https://github.com/vidalgithub/TERRAFORM_DEMOS.git'
-                        sh 'ls -la' // List files to confirm checkout
-                        sh 'pwd' // Print working directory
                     }
                 }
             }
         }
 
-        stage('Process Infrastructures') {
+        stage('Provision') {
             parallel {
-                stage('APPLY') {
+                stage('Provision 1 - EKS Private Cluster') {
                     when {
-                        expression { return params.ACTION == 'APPLY' }
+                        expression { params.ACTION == 'APPLY' && params.INFRASTRUCTURE == '1-eks-private-cluster' }
                     }
-                    stages {
-                        stage('Provision 1 - EKS Private Cluster') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('1-eks-private-cluster', '10-eks-PRIVate-vpc-BG')
-                                }
-                            }
-                        }
-                        stage('Provision 2 - AWS LB Controller') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('2-AWS-LB-Controller', '11-aws-LBC-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 3 - EXT DNS') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('3-EXT-DNS', '14-externaldns-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 4 - Metrics Server') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('4-Metrics-Server', '27-tf-k8s-METRICS-SERVER-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 5 - Cluster AutoScaler') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('5-Cluster-AutoScaler', '26-tf-CA-cluster-autoscaler-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 6 - EBS CSI DRIVER') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('6-EBS-CSI-DRIVER', '06-ebs-EBS-addon-terraform-manifests')
-                                }
+                    steps {
+                        script {
+                            def infraDir = '10-eks-PRIVate-vpc-BG'
+                            dir("${env.RESOURCE_DIR}/${infraDir}") {
+                                sh 'terraform init'
+                                sh 'terraform plan -out=tfplan'
+                                sh 'terraform show -no-color tfplan > tfplan.txt'
                             }
                         }
                     }
                 }
 
-                stage('DESTROY') {
+                stage('Provision 2 - AWS LB Controller') {
                     when {
-                        expression { return params.ACTION == 'DESTROY' }
+                        expression { params.ACTION == 'APPLY' && params.INFRASTRUCTURE == '2-AWS-LB-Controller' || params.INFRASTRUCTURE == '1-eks-private-cluster' }
                     }
-                    stages {
-                        stage('Destroy 6 - EBS CSI DRIVER') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('6-EBS-CSI-DRIVER', '06-ebs-EBS-addon-terraform-manifests')
-                                }
+                    steps {
+                        script {
+                            def infraDir = '11-aws-LBC-install-terraform-manifests'
+                            dir("${env.RESOURCE_DIR}/${infraDir}") {
+                                sh 'terraform init'
+                                sh 'terraform plan -out=tfplan'
+                                sh 'terraform show -no-color tfplan > tfplan.txt'
                             }
                         }
-                        stage('Destroy 5 - Cluster AutoScaler') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('5-Cluster-AutoScaler', '26-tf-CA-cluster-autoscaler-install-terraform-manifests')
-                                }
+                    }
+                }
+
+                stage('Provision 3 - EXT DNS') {
+                    when {
+                        expression { params.ACTION == 'APPLY' && params.INFRASTRUCTURE == '3-EXT-DNS' || params.INFRASTRUCTURE == '2-AWS-LB-Controller' || params.INFRASTRUCTURE == '1-eks-private-cluster' }
+                    }
+                    steps {
+                        script {
+                            def infraDir = '14-externaldns-install-terraform-manifests'
+                            dir("${env.RESOURCE_DIR}/${infraDir}") {
+                                sh 'terraform init'
+                                sh 'terraform plan -out=tfplan'
+                                sh 'terraform show -no-color tfplan > tfplan.txt'
                             }
                         }
-                        stage('Destroy 4 - Metrics Server') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('4-Metrics-Server', '27-tf-k8s-METRICS-SERVER-terraform-manifests')
-                                }
+                    }
+                }
+
+                stage('Provision 4 - Metrics Server') {
+                    when {
+                        expression { params.ACTION == 'APPLY' && params.INFRASTRUCTURE == '4-Metrics-Server' || params.INFRASTRUCTURE == '3-EXT-DNS' || params.INFRASTRUCTURE == '2-AWS-LB-Controller' || params.INFRASTRUCTURE == '1-eks-private-cluster' }
+                    }
+                    steps {
+                        script {
+                            def infraDir = '27-tf-k8s-METRICS-SERVER-terraform-manifests'
+                            dir("${env.RESOURCE_DIR}/${infraDir}") {
+                                sh 'terraform init'
+                                sh 'terraform plan -out=tfplan'
+                                sh 'terraform show -no-color tfplan > tfplan.txt'
                             }
                         }
-                        stage('Destroy 3 - EXT DNS') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('3-EXT-DNS', '14-externaldns-install-terraform-manifests')
-                                }
+                    }
+                }
+
+                stage('Provision 5 - Cluster AutoScaler') {
+                    when {
+                        expression { params.ACTION == 'APPLY' && params.INFRASTRUCTURE == '5-Cluster-AutoScaler' || params.INFRASTRUCTURE == '4-Metrics-Server' || params.INFRASTRUCTURE == '3-EXT-DNS' || params.INFRASTRUCTURE == '2-AWS-LB-Controller' || params.INFRASTRUCTURE == '1-eks-private-cluster' }
+                    }
+                    steps {
+                        script {
+                            def infraDir = '26-tf-CA-cluster-autoscaler-install-terraform-manifests'
+                            dir("${env.RESOURCE_DIR}/${infraDir}") {
+                                sh 'terraform init'
+                                sh 'terraform plan -out=tfplan'
+                                sh 'terraform show -no-color tfplan > tfplan.txt'
                             }
                         }
-                        stage('Destroy 2 - AWS LB Controller') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('2-AWS-LB-Controller', '11-aws-LBC-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Destroy 1 - EKS Private Cluster') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('1-eks-private-cluster', '10-eks-PRIVate-vpc-BG')
-                                }
+                    }
+                }
+
+                stage('Provision 6 - EBS CSI Driver') {
+                    when {
+                        expression { params.ACTION == 'APPLY' && params.INFRASTRUCTURE == '6-EBS-CSI-DRIVER' || params.INFRASTRUCTURE == '5-Cluster-AutoScaler' || params.INFRASTRUCTURE == '4-Metrics-Server' || params.INFRASTRUCTURE == '3-EXT-DNS' || params.INFRASTRUCTURE == '2-AWS-LB-Controller' || params.INFRASTRUCTURE == '1-eks-private-cluster' }
+                    }
+                    steps {
+                        script {
+                            def infraDir = '06-ebs-EBS-addon-terraform-manifests'
+                            dir("${env.RESOURCE_DIR}/${infraDir}") {
+                                sh 'terraform init'
+                                sh 'terraform plan -out=tfplan'
+                                sh 'terraform show -no-color tfplan > tfplan.txt'
                             }
                         }
                     }
                 }
             }
         }
-    }
-}
 
-def provisionInfrastructure(infraName, infraDir) {
-    try {
-        dir("${env.RESOURCE_DIR}/${infraDir}") {
-            // Initialize Terraform
-            sh 'terraform init'
-            
-            // Plan Terraform
-            sh 'terraform plan -out=tfplan'
-            sh 'terraform show -no-color tfplan > tfplan.txt'
-            
-            // Display the contents of the plan files
-            echo 'Contents of tfplan file:'
-            sh 'terraform show tfplan'
-            echo 'Contents of tfplan.txt file:'
-            sh 'cat tfplan.txt'
-            
-            // Read the plan file for approval
-            def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt"
-            def plan = readFile planFile
-            
-            // Approval stage
-            if (!params.autoApprove) {
-                input message: "Do you want to apply the Terraform plan for ${infraName}?",
-                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+        stage('Approval') {
+            when {
+                not {
+                    equals expected: true, actual: params.autoApprove
+                }
             }
-            
-            // Apply the plan
-            sh 'terraform apply -input=false tfplan'
-        }
-    } catch (Exception e) {
-        error "Error in provisioning ${infraName}: ${e.getMessage()}"
-    }
-}
+            steps {
+                script {
+                    def infraName = params.INFRASTRUCTURE
+                    def infraDir = infraMapping[infraName]
+                    def planFile = params.ACTION == 'APPLY' ? "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt" : "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
 
-def destroyInfrastructure(infraName, infraDir) {
-    try {
-        dir("${env.RESOURCE_DIR}/${infraDir}") {
-            // Initialize Terraform
-            sh 'terraform init'
-            
-            // Plan Destroy Terraform
-            sh 'terraform plan -destroy -out=tfplan-destroy'
-            sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
-            
-            // Display the contents of the destroy plan files
-            echo 'Contents of tfplan-destroy file:'
-            sh 'terraform show tfplan-destroy'
-            echo 'Contents of tfplan-destroy.txt file:'
-            sh 'cat tfplan-destroy.txt'
-            
-            // Read the plan file for approval
-            def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
-            def plan = readFile planFile
-            
-            // Approval stage
-            if (!params.autoApprove) {
-                input message: "Do you want to destroy the Terraform resources for ${infraName}?",
-                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                    def plan = readFile(planFile)
+                    input message: "Do you want to ${params.ACTION.toLowerCase()} the resources?",
+                          parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                }
             }
-            
-            // Destroy the plan
-            sh 'terraform apply -input=false tfplan-destroy'
         }
-    } catch (Exception e) {
-        error "Error in destroying ${infraName}: ${e.getMessage()}"
+
+        stage('Apply or Destroy') {
+            steps {
+                script {
+                    def infraName = params.INFRASTRUCTURE
+                    def infraDir = infraMapping[infraName]
+
+                    if (params.ACTION == 'APPLY') {
+                        dir("${env.RESOURCE_DIR}/${infraDir}") {
+                            sh 'terraform apply -input=false tfplan'
+                        }
+                    } else if (params.ACTION == 'DESTROY') {
+                        // Destroy infrastructure in reverse order
+                        def destroyOrder = [
+                            '6-EBS-CSI-DRIVER',
+                            '5-Cluster-AutoScaler',
+                            '4-Metrics-Server',
+                            '3-EXT-DNS',
+                            '2-AWS-LB-Controller',
+                            '1-eks-private-cluster'
+                        ]
+                        def index = destroyOrder.indexOf(infraName)
+                        if (index != -1) {
+                            for (int i = index; i >= 0; i--) {
+                                def infra = destroyOrder[i]
+                                def destroyDir = infraMapping[infra]
+                                dir("${env.RESOURCE_DIR}/${destroyDir}") {
+                                    sh 'terraform plan -destroy -out=tfplan-destroy'
+                                    sh 'terraform apply -input=false tfplan-destroy'
+                                }
+                            }
+                        }
+                    } else {
+                        error "Invalid action: ${params.ACTION}"
+                    }
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            echo 'Build failed.'
+        }
+        success {
+            echo 'Build succeeded.'
+        }
     }
 }
