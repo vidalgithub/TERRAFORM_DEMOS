@@ -7,7 +7,7 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
-    
+
     agent {
         docker {
             image 'hashicorp/terraform:1.9.3'
@@ -26,11 +26,12 @@ pipeline {
 
                 stage('Checkout') {
                     steps {
-                        script {
-                            dir("eks") {
-                                git "https://github.com/vidalgithub/Terraform-Jenkins.git"
-                                sh 'ls -la' // List files to confirm checkout
-                            }
+                        cleanWs() // Clean workspace before checkout
+                        sh 'mkdir -p eks' // Create the directory
+                        dir("eks") {
+                            git "https://github.com/vidalgithub/Terraform-Jenkins.git"
+                            sh 'ls -la' // List files to confirm checkout
+                            sh 'pwd' // Print working directory
                         }
                     }
                 }
