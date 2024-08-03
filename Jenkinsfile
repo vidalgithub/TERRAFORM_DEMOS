@@ -2,7 +2,6 @@ pipeline {
     agent any
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Choose action to perform')
-        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run the selected action after generating plan?')
     }
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
@@ -143,12 +142,8 @@ def provisionInfrastructure(infraName, infraDir) {
         // Read the plan file for approval
         def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt"
         def plan = readFile planFile
-        
-        // Approval stage
-        if (!params.autoApprove) {
-            input message: "Do you want to apply the Terraform plan for ${infraName}?",
-                  parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-        }
+        input message: "Do you want to apply the Terraform plan for ${infraName}?",
+              parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
         
         // Apply the plan
         sh 'terraform apply -input=false tfplan'
@@ -167,12 +162,8 @@ def destroyInfrastructure(infraName, infraDir) {
         // Read the plan file for approval
         def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
         def plan = readFile planFile
-        
-        // Approval stage
-        if (!params.autoApprove) {
-            input message: "Do you want to destroy the Terraform resources for ${infraName}?",
-                  parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-        }
+        input message: "Do you want to destroy the Terraform resources for ${infraName}?",
+              parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
         
         // Destroy the plan
         sh 'terraform apply -input=false tfplan-destroy'
