@@ -141,6 +141,12 @@ def provisionInfrastructure(infraName, infraDir) {
             sh 'terraform plan -out=tfplan'
             sh 'terraform show -no-color tfplan > tfplan.txt'
             
+            // Display the contents of the plan files
+            echo 'Contents of tfplan file:'
+            sh 'terraform show tfplan'
+            echo 'Contents of tfplan.txt file:'
+            sh 'cat tfplan.txt'
+            
             // Read the plan file for approval
             def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt"
             def plan = readFile planFile
@@ -168,6 +174,12 @@ def destroyInfrastructure(infraName, infraDir) {
             // Plan Destroy Terraform
             sh 'terraform plan -destroy -out=tfplan-destroy'
             sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
+            
+            // Display the contents of the destroy plan files
+            echo 'Contents of tfplan-destroy file:'
+            sh 'terraform show tfplan-destroy'
+            echo 'Contents of tfplan-destroy.txt file:'
+            sh 'cat tfplan-destroy.txt'
             
             // Read the plan file for approval
             def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
