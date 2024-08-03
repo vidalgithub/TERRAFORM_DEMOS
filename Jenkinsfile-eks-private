@@ -141,7 +141,36 @@ pipeline {
             }
             steps {
                 script {
+                    def infraDir
+                    switch (params.INFRASTRUCTURE) {
+                        case '1-eks-private-cluster':
+                            infraDir = '10-eks-PRIVate-vpc-BG'
+                            break
+                        case '2-AWS-LB-Controller':
+                            infraDir = '11-aws-LBC-install-terraform-manifests'
+                            break
+                        case '3-EXT-DNS':
+                            infraDir = '14-externaldns-install-terraform-manifests'
+                            break
+                        case '4-Metrics-Server':
+                            infraDir = '27-tf-k8s-METRICS-SERVER-terraform-manifests'
+                            break
+                        case '5-Cluster-AutoScaler':
+                            infraDir = '26-tf-CA-cluster-autoscaler-install-terraform-manifests'
+                            break
+                        case '6-EBS-CSI-DRIVER':
+                            infraDir = '06-ebs-EBS-addon-terraform-manifests'
+                            break
+                        case '7-Argocd-Ingress':
+                            infraDir = '36-ARGOCD-service-HTTP2-AWS-LBC-Ingress'
+                            break
+                    }
                     def planFile = params.ACTION == 'APPLY' ? "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt" : "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
+                    
+                    // Debugging statements
+                    sh "echo 'Plan file path: ${planFile}'"
+                    sh "ls -la ${env.RESOURCE_DIR}/${infraDir}"
+
                     def plan = readFile planFile
                     input message: "Do you want to ${params.ACTION.toLowerCase()} the resources?",
                           parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
@@ -217,7 +246,7 @@ pipeline {
                             break
                     }
                     dir("${env.RESOURCE_DIR}/${infraDir}") {
-                        sh 'terraform apply -destroy -input=false tfplan-destroy'
+                        sh 'terraform destroy -auto-approve'
                     }
                 }
             }
