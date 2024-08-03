@@ -233,4 +233,23 @@ pipeline {
                             infraDir = '14-EXTERNAL-DNS-install-terraform-manifests'
                             break
                         case '4-Metrics-Server':
-                            infraDir = '27-METRICS-SERVER-tf
+                            infraDir = '27-METRICS-SERVER-tf-k8s-terraform-manifests'
+                            break
+                        case '5-Cluster-AutoScaler':
+                            infraDir = '26-CA-tf-CLUSTER-AUTOSCALER-install-terraform-manifests'
+                            break
+                        case '6-EBS-CSI-DRIVER':
+                            infraDir = '06-ebs-EBS-addon-terraform-manifests'
+                            break
+                        case '7-Argocd-Ingress':
+                            infraDir = '36-ARGOCD-service-HTTP2-AWS-LBC-Ingress'
+                            break
+                    }
+                    dir("${env.RESOURCE_DIR}/${infraDir}") {
+                        sh 'terraform destroy -auto-approve'
+                    }
+                }
+            }
+        }
+    }
+}
