@@ -132,49 +132,57 @@ pipeline {
 }
 
 def provisionInfrastructure(infraName, infraDir) {
-    dir("${env.RESOURCE_DIR}/${infraDir}") {
-        // Initialize Terraform
-        sh 'terraform init'
-        
-        // Plan Terraform
-        sh 'terraform plan -out=tfplan'
-        sh 'terraform show -no-color tfplan > tfplan.txt'
-        
-        // Read the plan file for approval
-        def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt"
-        def plan = readFile planFile
-        
-        // Approval stage
-        if (!params.autoApprove) {
-            input message: "Do you want to apply the Terraform plan for ${infraName}?",
-                  parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+    try {
+        dir("${env.RESOURCE_DIR}/${infraDir}") {
+            // Initialize Terraform
+            sh 'terraform init'
+            
+            // Plan Terraform
+            sh 'terraform plan -out=tfplan'
+            sh 'terraform show -no-color tfplan > tfplan.txt'
+            
+            // Read the plan file for approval
+            def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan.txt"
+            def plan = readFile planFile
+            
+            // Approval stage
+            if (!params.autoApprove) {
+                input message: "Do you want to apply the Terraform plan for ${infraName}?",
+                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+            }
+            
+            // Apply the plan
+            sh 'terraform apply -input=false tfplan'
         }
-        
-        // Apply the plan
-        sh 'terraform apply -input=false tfplan'
+    } catch (Exception e) {
+        error "Error in provisioning ${infraName}: ${e.getMessage()}"
     }
 }
 
 def destroyInfrastructure(infraName, infraDir) {
-    dir("${env.RESOURCE_DIR}/${infraDir}") {
-        // Initialize Terraform
-        sh 'terraform init'
-        
-        // Plan Destroy Terraform
-        sh 'terraform plan -destroy -out=tfplan-destroy'
-        sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
-        
-        // Read the plan file for approval
-        def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
-        def plan = readFile planFile
-        
-        // Approval stage
-        if (!params.autoApprove) {
-            input message: "Do you want to destroy the Terraform resources for ${infraName}?",
-                  parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+    try {
+        dir("${env.RESOURCE_DIR}/${infraDir}") {
+            // Initialize Terraform
+            sh 'terraform init'
+            
+            // Plan Destroy Terraform
+            sh 'terraform plan -destroy -out=tfplan-destroy'
+            sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
+            
+            // Read the plan file for approval
+            def planFile = "${env.RESOURCE_DIR}/${infraDir}/tfplan-destroy.txt"
+            def plan = readFile planFile
+            
+            // Approval stage
+            if (!params.autoApprove) {
+                input message: "Do you want to destroy the Terraform resources for ${infraName}?",
+                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+            }
+            
+            // Destroy the plan
+            sh 'terraform apply -input=false tfplan-destroy'
         }
-        
-        // Destroy the plan
-        sh 'terraform apply -input=false tfplan-destroy'
+    } catch (Exception e) {
+        error "Error in destroying ${infraName}: ${e.getMessage()}"
     }
 }
