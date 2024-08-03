@@ -29,10 +29,10 @@ pipeline {
                         //cleanWs() // Clean workspace before checkout
                         script {
                             sh '''
-                                mkdir -p eks && cd eks // Create the directory
+                                mkdir -p eks && cd eks 
                                 git clone "https://github.com/vidalgithub/Terraform-Jenkins.git"
-                                pwd // Print working directory 
-                                ls -la // List files to confirm checkout
+                                pwd 
+                                ls -la 
                             '''
                         }
                     }
