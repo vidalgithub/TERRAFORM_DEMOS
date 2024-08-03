@@ -26,12 +26,14 @@ pipeline {
 
                 stage('Checkout') {
                     steps {
-                        cleanWs() // Clean workspace before checkout
-                        sh 'mkdir -p eks' // Create the directory
-                        dir("eks") {
-                            git "https://github.com/vidalgithub/TERRAFORM_DEMOS.git"
-                            sh 'ls -la' // List files to confirm checkout
-                            sh 'pwd' // Print working directory
+                        script {
+                            sh 'rm -rf *' // Clean workspace by removing all files
+                            sh 'mkdir -p eks' // Create the directory
+                            dir("eks") {
+                                git "https://github.com/vidalgithub/TERRAFORM_DEMOS.git"
+                                sh 'ls -la' // List files to confirm checkout
+                                sh 'pwd' // Print working directory
+                            }
                         }
                     }
                 }
