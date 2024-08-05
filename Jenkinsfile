@@ -92,8 +92,8 @@ pipeline {
 
 def provisionInfrastructure(name, dir) {
     try {
-        echo "Starting provision of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
-        dir("${env.RESOURCE_DIR}/${dir}") {
+        echo "Starting provision of ${infra.name} in directory ${env.RESOURCE_DIR}/${infra.dir}"
+        dir("${env.RESOURCE_DIR}/${infra.dir}") {
             // Initialize Terraform
             sh 'terraform init'
             
@@ -108,13 +108,13 @@ def provisionInfrastructure(name, dir) {
             sh 'cat tfplan.txt'
             
             // Read the plan file for approval
-            def planFile = "${env.RESOURCE_DIR}/${dir}/tfplan.txt"
+            def planFile = "${env.RESOURCE_DIR}/${infra.dir}/tfplan.txt"
             if (fileExists(planFile)) {
                 def plan = readFile planFile
                 
                 // Approval stage
                 if (!params.autoApprove) {
-                    input message: "Do you want to apply the Terraform plan for ${name}?",
+                    input message: "Do you want to apply the Terraform plan for ${infra.name}?",
                           parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
                 }
                 
@@ -125,14 +125,14 @@ def provisionInfrastructure(name, dir) {
             }
         }
     } catch (Exception e) {
-        error "Error in provisioning ${name}: ${e.getMessage()}"
+        error "Error in provisioning ${infra.name}: ${e.getMessage()}"
     }
 }
 
 def destroyInfrastructure(name, dir) {
     try {
-        echo "Starting destruction of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
-        dir("${env.RESOURCE_DIR}/${dir}") {
+        echo "Starting destruction of ${infra.name} in directory ${env.RESOURCE_DIR}/${infra.dir}"
+        dir("${env.RESOURCE_DIR}/${infra.dir}") {
             // Initialize Terraform
             sh 'terraform init'
             
@@ -147,13 +147,13 @@ def destroyInfrastructure(name, dir) {
             sh 'cat tfplan-destroy.txt'
             
             // Read the plan file for approval
-            def planFile = "${env.RESOURCE_DIR}/${dir}/tfplan-destroy.txt"
+            def planFile = "${env.RESOURCE_DIR}/${infra.dir}/tfplan-destroy.txt"
             if (fileExists(planFile)) {
                 def plan = readFile planFile
                 
                 // Approval stage
                 if (!params.autoApprove) {
-                    input message: "Do you want to destroy the Terraform resources for ${name}?",
+                    input message: "Do you want to destroy the Terraform resources for ${infra.name}?",
                           parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
                 }
                 
@@ -164,6 +164,6 @@ def destroyInfrastructure(name, dir) {
             }
         }
     } catch (Exception e) {
-        error "Error in destroying ${name}: ${e.getMessage()}"
+        error "Error in destroying ${infra.name}: ${e.getMessage()}"
     }
 }
