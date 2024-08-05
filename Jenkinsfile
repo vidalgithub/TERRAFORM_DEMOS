@@ -32,45 +32,22 @@ pipeline {
                         expression { return params.ACTION == 'APPLY' }
                     }
                     stages {
-                        stage('Provision 1 - EKS Private Cluster') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('1-eks-private-cluster', '10-eks-private-vpc-BG')
-                                }
-                            }
-                        }
-                        stage('Provision 2 - AWS LB Controller') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('2-AWS-LB-Controller', '11-aws-LBC-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 3 - EXT DNS') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('3-EXT-DNS', '14-externaldns-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 4 - Metrics Server') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('4-Metrics-Server', '27-tf-k8s-metrics-server-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 5 - Cluster AutoScaler') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('5-Cluster-AutoScaler', '26-tf-CA-cluster-autoscaler-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Provision 6 - EBS CSI DRIVER') {
-                            steps {
-                                script {
-                                    provisionInfrastructure('6-EBS-CSI-DRIVER', '06-ebs-EBS-addon-terraform-manifests')
+                        script {
+                            def infrastructures = [
+                                [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG'],
+                                [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
+                                [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
+                                [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
+                                [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
+                                [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
+                            ]
+                            for (infra in infrastructures) {
+                                stage("Provision ${infra.name}") {
+                                    steps {
+                                        script {
+                                            provisionInfrastructure(infra.name, infra.dir)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -82,45 +59,22 @@ pipeline {
                         expression { return params.ACTION == 'DESTROY' }
                     }
                     stages {
-                        stage('Destroy 6 - EBS CSI DRIVER') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('6-EBS-CSI-DRIVER', '06-ebs-EBS-addon-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Destroy 5 - Cluster AutoScaler') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('5-Cluster-AutoScaler', '26-tf-CA-cluster-autoscaler-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Destroy 4 - Metrics Server') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('4-Metrics-Server', '27-tf-k8s-metrics-server-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Destroy 3 - EXT DNS') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('3-EXT-DNS', '14-externaldns-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Destroy 2 - AWS LB Controller') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('2-AWS-LB-Controller', '11-aws-LBC-install-terraform-manifests')
-                                }
-                            }
-                        }
-                        stage('Destroy 1 - EKS Private Cluster') {
-                            steps {
-                                script {
-                                    destroyInfrastructure('1-eks-private-cluster', '10-eks-private-vpc-BG')
+                        script {
+                            def infrastructures = [
+                                [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests'],
+                                [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
+                                [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
+                                [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
+                                [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
+                                [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG']
+                            ]
+                            for (infra in infrastructures) {
+                                stage("Destroy ${infra.name}") {
+                                    steps {
+                                        script {
+                                            destroyInfrastructure(infra.name, infra.dir)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -133,6 +87,7 @@ pipeline {
 
 def provisionInfrastructure(infraName, infraDir) {
     try {
+        echo "Starting provision of ${infraName} in directory ${env.RESOURCE_DIR}/${infraDir}"
         dir("${env.RESOURCE_DIR}/${infraDir}") {
             // Initialize Terraform
             sh 'terraform init'
@@ -171,6 +126,7 @@ def provisionInfrastructure(infraName, infraDir) {
 
 def destroyInfrastructure(infraName, infraDir) {
     try {
+        echo "Starting destruction of ${infraName} in directory ${env.RESOURCE_DIR}/${infraDir}"
         dir("${env.RESOURCE_DIR}/${infraDir}") {
             // Initialize Terraform
             sh 'terraform init'
