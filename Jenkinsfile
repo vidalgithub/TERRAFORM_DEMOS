@@ -27,66 +27,40 @@ pipeline {
                 }
             }
         }
-
         stage('Process Infrastructures') {
-            parallel {
-                stage('APPLY') {
-                    when {
-                        expression { return params.ACTION == 'APPLY' }
-                    }
-                    steps {
-                        script {
-                            echo 'Starting APPLY stages...'
-                            def infrastructures = [
-                                [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG'],
-                                [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
-                                [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
-                                [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
-                                [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
-                                [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
-                            ]
-                            for (infra in infrastructures) {
-                                stage("Provision ${infra.name}") {
-                                    steps {
-                                        script {
-                                            provisionInfrastructure(infra.name, infra.dir)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+    steps {
+        script {
+            echo 'Starting infrastructure processing...'
+            def infrastructures = [
+                [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG'],
+                [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
+                [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
+                [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
+                [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
+                [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
+            ]
+            
+            if (params.ACTION == 'APPLY') {
+                echo 'Starting APPLY stages...'
+                for (infra in infrastructures) {
+                    echo "Provisioning ${infra.name} in ${infra.dir}"
+                    provisionInfrastructure(infra.name, infra.dir)
                 }
-
-                stage('DESTROY') {
-                    when {
-                        expression { return params.ACTION == 'DESTROY' }
-                    }
-                    steps {
-                        script {
-                            echo 'Starting DESTROY stages...'
-                            def infrastructures = [
-                                [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests'],
-                                [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
-                                [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
-                                [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
-                                [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
-                                [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG']
-                            ]
-                            for (infra in infrastructures) {
-                                stage("Destroy ${infra.name}") {
-                                    steps {
-                                        script {
-                                            destroyInfrastructure(infra.name, infra.dir)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+            } else if (params.ACTION == 'DESTROY') {
+                echo 'Starting DESTROY stages...'
+                for (infra in infrastructures) {
+                    echo "Destroying ${infra.name} in ${infra.dir}"
+                    destroyInfrastructure(infra.name, infra.dir)
                 }
+            } else {
+                error "Invalid ACTION parameter: ${params.ACTION}"
             }
         }
+    }
+}
+
+
+
     }
 }
 
