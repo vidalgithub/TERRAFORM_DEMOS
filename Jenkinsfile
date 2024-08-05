@@ -13,8 +13,11 @@ pipeline {
         stage('Initialize and Checkout') {
             steps {
                 script {
+                    echo 'Cleaning workspace...'
                     // Clean workspace without removing the directory
                     sh 'find . -maxdepth 1 ! -name . -exec rm -rf {} +'
+                    
+                    echo 'Checking out the repository...'
                     // Checkout the Terraform repository
                     dir("eks") {
                         git branch: 'main', url: 'https://github.com/vidalgithub/TERRAFORM_DEMOS.git'
@@ -33,6 +36,7 @@ pipeline {
                     }
                     stages {
                         script {
+                            echo 'Starting APPLY stages...'
                             def infrastructures = [
                                 [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
@@ -60,6 +64,7 @@ pipeline {
                     }
                     stages {
                         script {
+                            echo 'Starting DESTROY stages...'
                             def infrastructures = [
                                 [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests'],
                                 [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
