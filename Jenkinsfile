@@ -33,8 +33,9 @@ pipeline {
                             ]
                             for (infra in infrastructures) {
                                 echo "Provisioning ${infra.name} in ${infra.dir}"
-                                dir("${env.RESOURCE_DIR}/${infra.dir}") {
-                                    // Assuming you have a method to handle the provisioning
+                                dir("${env.WORKSPACE}/${infra.dir}") {
+                                    // Debug step: List the directory contents
+                                    sh "ls -la"
                                     provisionInfrastructure(infra.name, infra.dir)
                                 }
                             }
@@ -56,12 +57,12 @@ pipeline {
                                 [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
                                 [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
                             ]
-                            // Reverse the order for DESTROY
                             def reverseInfrastructures = infrastructures.reverse()
                             for (infra in reverseInfrastructures) {
                                 echo "Destroying ${infra.name} in ${infra.dir}"
-                                dir("${env.RESOURCE_DIR}/${infra.dir}") {
-                                    // Assuming you have a method to handle the destruction
+                                dir("${env.WORKSPACE}/${infra.dir}") {
+                                    // Debug step: List the directory contents
+                                    sh "ls -la"
                                     destroyInfrastructure(infra.name, infra.dir)
                                 }
                             }
@@ -76,16 +77,9 @@ pipeline {
 def provisionInfrastructure(name, dir) {
     echo "Provisioning infrastructure: ${name} in directory: ${dir}"
     // Add actual provisioning logic here
-        sh 'cd ${env.RESOURCE_DIR}/${dir}'
-        sh 'pwd'
-
 }
 
 def destroyInfrastructure(name, dir) {
     echo "Destroying infrastructure: ${name} in directory: ${dir}"
     // Add actual destruction logic here
-        sh 'cd ${env.RESOURCE_DIR}/${dir}'
-        sh 'pwd'
-        sh 'ls -la'
-
 }
