@@ -8,21 +8,24 @@ pipeline {
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        RESOURCE_DIR          = 'eks/resources'
+        // RESOURCE_DIR          = 'eks/resources'
     }
 
     stages {
-        stage('Initialize and Checkout') {
+        stage('Clean Workspace') {
             steps {
                 script {
                     echo 'Cleaning workspace...'
                     // Clean workspace without removing the directory
                     sh 'find . -maxdepth 1 ! -name . -exec rm -rf {} +'
-                    
-                    echo 'Checking out the repository...'
-                    // Checkout the Terraform repository
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                script {
                     checkout scm
-                    }
                 }
             }
         }
@@ -47,7 +50,6 @@ pipeline {
                                 echo "Provisioning ${infra.name} in ${infra.dir}"
                                 dir("${env.WORKSPACE}/${infra.dir}") {
                                     // Debug step: List the directory contents
-                                    sh "pwd"
                                     sh "ls -la"
                                     provisionInfrastructure(infra.name, infra.dir)
                                 }
@@ -75,7 +77,6 @@ pipeline {
                                 echo "Destroying ${infra.name} in ${infra.dir}"
                                 dir("${env.WORKSPACE}/${infra.dir}") {
                                     // Debug step: List the directory contents
-                                    sh "pwd"
                                     sh "ls -la"
                                     destroyInfrastructure(infra.name, infra.dir)
                                 }
