@@ -1,14 +1,13 @@
 pipeline {
     agent any
 
+    environment {
+        RESOURCE_DIR = "${env.WORKSPACE}/resources"
+    }
+
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
         booleanParam(name: 'autoApprove', defaultValue: true, description: 'Automatically approve changes')
-    }
-    environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        // RESOURCE_DIR          = 'eks/resources'
     }
 
     stages {
@@ -48,7 +47,7 @@ pipeline {
                             ]
                             for (infra in infrastructures) {
                                 echo "Provisioning ${infra.name} in ${infra.dir}"
-                                dir("${env.WORKSPACE}/${infra.dir}") {
+                                dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                     // Debug step: List the directory contents
                                     sh "ls -la"
                                     provisionInfrastructure(infra.name, infra.dir)
@@ -75,7 +74,7 @@ pipeline {
                             def reverseInfrastructures = infrastructures.reverse()
                             for (infra in reverseInfrastructures) {
                                 echo "Destroying ${infra.name} in ${infra.dir}"
-                                dir("${env.WORKSPACE}/${infra.dir}") {
+                                dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                     // Debug step: List the directory contents
                                     sh "ls -la"
                                     destroyInfrastructure(infra.name, infra.dir)
