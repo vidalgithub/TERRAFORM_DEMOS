@@ -76,17 +76,16 @@ pipeline {
 def provisionInfrastructure(name, dir) {
     echo "Provisioning infrastructure: ${name} in directory: ${dir}"
     // Add actual provisioning logic here
-    dir("${env.RESOURCE_DIR}/${dir}") {
+        sh 'cd ${env.RESOURCE_DIR}/${dir}'
         sh 'pwd'
-        sh 'ls -la'
-    }
+
 }
 
 def destroyInfrastructure(name, dir) {
     echo "Destroying infrastructure: ${name} in directory: ${dir}"
     // Add actual destruction logic here
-    dir("${env.RESOURCE_DIR}/${dir}") {
+        sh 'cd ${env.RESOURCE_DIR}/${dir}'
         sh 'pwd'
         sh 'ls -la'
-    }
+
 }
