@@ -114,8 +114,12 @@ def provisionInfrastructure(name, dir) {
             
             // Approval stage
             if (!params.autoApprove) {
-                input message: "Do you want to apply the Terraform plan for ${name}?",
-                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                def userInput = input message: "Do you want to apply the Terraform plan for ${name}?",
+                                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                if (userInput == 'abort') {
+                    echo "Skipping provisioning of ${name} as per user input."
+                    return
+                }
             }
             
             // Apply the plan
@@ -153,8 +157,12 @@ def destroyInfrastructure(name, dir) {
             
             // Approval stage
             if (!params.autoApprove) {
-                input message: "Do you want to destroy the Terraform resources for ${name}?",
-                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                def userInput = input message: "Do you want to destroy the Terraform resources for ${name}?",
+                                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                if (userInput == 'abort') {
+                    echo "Skipping destruction of ${name} as per user input."
+                    return
+                }
             }
             
             // Destroy the plan
