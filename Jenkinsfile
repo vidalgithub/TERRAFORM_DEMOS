@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
 
     parameters {
@@ -41,7 +43,7 @@ pipeline {
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
-                                [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
+                                [name: '4-Metrics-Server', dir: '27-tf-k8s-METRICS-SERVER-terraform-manifests'],
                                 [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
                                 [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
                             ]
@@ -67,7 +69,7 @@ pipeline {
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
-                                [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
+                                [name: '4-Metrics-Server', dir: '27-tf-k8s-METRICS-SERVER-terraform-manifests'],
                                 [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
                                 [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
                             ]
