@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'ACTION', defaultValue: 'APPLY', description: 'Action to perform (APPLY/DESTROY)')
+        choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
         booleanParam(name: 'autoApprove', defaultValue: true, description: 'Automatically approve changes')
     }
 
