@@ -5,12 +5,27 @@ pipeline {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
         booleanParam(name: 'autoApprove', defaultValue: true, description: 'Automatically approve changes')
     }
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        RESOURCE_DIR          = 'eks/resources'
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Initialize and Checkout') {
             steps {
                 script {
-                    checkout scm
+                    echo 'Cleaning workspace...'
+                    // Clean workspace without removing the directory
+                    sh 'find . -maxdepth 1 ! -name . -exec rm -rf {} +'
+                    
+                    echo 'Checking out the repository...'
+                    // Checkout the Terraform repository
+                    dir("eks") {
+                        git branch: 'main', url: 'https://github.com/vidalgithub/TERRAFORM_DEMOS.git'
+                        sh 'ls -la' // List files to confirm checkout
+                        sh 'pwd' // Print working directory
+                    }
                 }
             }
         }
