@@ -38,7 +38,7 @@ pipeline {
                     steps {
                         script {
                             def infrastructures = [
-                                [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG'],
+                                [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
                                 [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
@@ -64,7 +64,7 @@ pipeline {
                     steps {
                         script {
                             def infrastructures = [
-                                [name: '1-eks-private-cluster', dir: '10-eks-private-vpc-BG'],
+                                [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
                                 [name: '4-Metrics-Server', dir: '27-tf-k8s-metrics-server-terraform-manifests'],
