@@ -13,6 +13,16 @@ pipeline {
     }
 
     stages {
+        stage('Initialize') {
+            steps {
+                script {
+                    // Record the start time
+                    currentBuild.startTimeInMillis = System.currentTimeMillis()
+                    echo "Build started at: ${new Date(currentBuild.startTimeInMillis).format('yyyy-MM-dd HH:mm:ss')}"
+                }
+            }
+        }
+        
         stage('Clean Workspace') {
             steps {
                 script {
@@ -85,6 +95,28 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Record the end time
+                def endTime = System.currentTimeMillis()
+                def startTime = currentBuild.startTimeInMillis
+                def durationMillis = endTime - startTime
+                
+                // Calculate duration in hours, minutes, and seconds
+                def durationSeconds = durationMillis / 1000
+                def hours = durationSeconds / 3600
+                def minutes = (durationSeconds % 3600) / 60
+                def seconds = durationSeconds % 60
+
+                def formattedEndTime = new Date(endTime).format('yyyy-MM-dd HH:mm:ss')
+                echo "Build started at: ${new Date(startTime).format('yyyy-MM-dd HH:mm:ss')}"
+                echo "Build ended at: ${formattedEndTime}"
+                echo "Total duration: ${hours} hours, ${minutes} minutes, ${seconds} seconds"
             }
         }
     }
