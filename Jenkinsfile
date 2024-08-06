@@ -9,7 +9,7 @@ pipeline {
 
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
-        booleanParam(name: 'autoApprove', defaultValue: true, description: 'Automatically approve changes')
+        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically approve changes')
     }
 
     stages {
