@@ -21,10 +21,7 @@ pipeline {
                     
                     echo 'Checking out the repository...'
                     // Checkout the Terraform repository
-                    dir("eks") {
-                        git branch: 'main', url: 'https://github.com/vidalgithub/TERRAFORM_DEMOS.git'
-                        sh 'ls -la' // List files to confirm checkout
-                        sh 'pwd' // Print working directory
+                    checkout scm
                     }
                 }
             }
@@ -50,6 +47,7 @@ pipeline {
                                 echo "Provisioning ${infra.name} in ${infra.dir}"
                                 dir("${env.WORKSPACE}/${infra.dir}") {
                                     // Debug step: List the directory contents
+                                    sh "pwd"
                                     sh "ls -la"
                                     provisionInfrastructure(infra.name, infra.dir)
                                 }
@@ -77,6 +75,7 @@ pipeline {
                                 echo "Destroying ${infra.name} in ${infra.dir}"
                                 dir("${env.WORKSPACE}/${infra.dir}") {
                                     // Debug step: List the directory contents
+                                    sh "pwd"
                                     sh "ls -la"
                                     destroyInfrastructure(infra.name, infra.dir)
                                 }
