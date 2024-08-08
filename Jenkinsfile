@@ -3,10 +3,8 @@ pipeline {
 
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
-        VAULT_ADDR = credentials('vaultUrl')
-        VAULT_TOKEN = credentials('vaultCred')
-        //AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        //AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        VAULT_ADDR = credentials('vaultAddr')
+        VAULT_TOKEN = credentials('vaultToken')
     }
 
     parameters {
@@ -29,6 +27,32 @@ pipeline {
             steps {
                 script {
                     checkout scm
+                }
+            }
+        }
+
+        stage('Fetch AWS Credentials from Vault') {
+            steps {
+                script {
+                    withVault(
+                        configuration: [
+                            disableChildPoliciesOverride: false,
+                            timeout: 60,
+                            vaultCredentialId: 'vaultCred',
+                            vaultUrl: "${env.VAULT_ADDR}"
+                        ],
+                        vaultSecrets: [
+                            [
+                                path: 'aws-admin-backend/creds/aws-admin-role',
+                                secretValues: [
+                                    [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
+                                    [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']
+                                ]
+                            ]
+                        ]
+                    ) {
+                        echo 'AWS credentials have been fetched from Vault.'
+                    }
                 }
             }
         }
@@ -116,12 +140,8 @@ def provisionInfrastructure(name, dir) {
             
             // Approval stage
             if (!params.autoApprove) {
-                def userInput = input message: "Do you want to apply the Terraform plan for ${name}?",
-                                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-                if (userInput == 'abort') {
-                    echo "Skipping provisioning of ${name} as per user input."
-                    return
-                }
+                input message: "Do you want to apply the Terraform plan for ${name}?",
+                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
             }
             
             // Apply the plan
@@ -159,12 +179,8 @@ def destroyInfrastructure(name, dir) {
             
             // Approval stage
             if (!params.autoApprove) {
-                def userInput = input message: "Do you want to destroy the Terraform resources for ${name}?",
-                                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-                if (userInput == 'abort') {
-                    echo "Skipping destruction of ${name} as per user input."
-                    return
-                }
+                input message: "Do you want to destroy the Terraform resources for ${name}?",
+                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
             }
             
             // Destroy the plan
