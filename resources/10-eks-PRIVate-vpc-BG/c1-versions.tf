@@ -20,11 +20,11 @@ terraform {
 }
 
 ############# CONNECT AND GENERATE TEMPORARY AWS CREDENTIALS ################
-# provider "vault" {
-#     address = "http://vault.beitcloud.com:8200"
-# }
+provider "vault" {
+    address = "http://vault.beitcloud.com:8200"
+}
 
-provider "vault" {}
+#provider "vault" {}
 # First, set Vault server and token as env variables - see script.sh
 
 variable "cred_backend" {
