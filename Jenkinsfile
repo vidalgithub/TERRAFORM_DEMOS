@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
-        //AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        //AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
@@ -85,7 +85,6 @@ pipeline {
 }
 def provisionInfrastructure(name, dir) {
     try {
-        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
         echo "Starting provision of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
         // Initialize Terraform
         sh 'terraform init'
@@ -116,14 +115,12 @@ def provisionInfrastructure(name, dir) {
         } else {
             error "Plan file ${planFile} does not exist"
         }
-    }
     } catch (Exception e) {
         error "Error in provisioning ${name}: ${e.getMessage()}"
     }
 }
 def destroyInfrastructure(name, dir) {
     try {
-        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
         echo "Starting destruction of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
         // Initialize Terraform
         sh 'terraform init'
@@ -154,7 +151,6 @@ def destroyInfrastructure(name, dir) {
         } else {
             error "Plan file ${planFile} does not exist"
         }
-    } 
     } catch (Exception e) {
         error "Error in destroying ${name}: ${e.getMessage()}"
     }
