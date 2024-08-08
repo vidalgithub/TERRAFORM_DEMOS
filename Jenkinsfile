@@ -1,17 +1,14 @@
 pipeline {
     agent any
-
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
-        VAULT_ADDR = credentials('vaultAddr')
-        VAULT_TOKEN = credentials('vaultToken')
+        //AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        //AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
-
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically approve changes')
     }
-
     stages {
         stage('Clean Workspace') {
             steps {
@@ -22,7 +19,6 @@ pipeline {
                 }
             }
         }
-
         stage('Checkout') {
             steps {
                 script {
@@ -30,33 +26,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Fetch AWS Credentials from Vault') {
-            steps {
-                script {
-                    withVault(
-                        configuration: [
-                            disableChildPoliciesOverride: false,
-                            timeout: 60,
-                            vaultCredentialId: 'vaultCred',
-                            vaultUrl: "${env.VAULT_ADDR}"
-                        ],
-                        vaultSecrets: [
-                            [
-                                path: 'aws-admin-backend/creds/aws-admin-role',
-                                secretValues: [
-                                    [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
-                                    [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']
-                                ]
-                            ]
-                        ]
-                    ) {
-                        echo 'AWS credentials have been fetched from Vault.'
-                    }
-                }
-            }
-        }
-
         stage('Process Infrastructures') {
             parallel {
                 stage('APPLY') {
@@ -84,7 +53,6 @@ pipeline {
                         }
                     }
                 }
-
                 stage('DESTROY') {
                     when {
                         expression { return params.ACTION == 'DESTROY' }
@@ -115,11 +83,9 @@ pipeline {
         }
     }
 }
-
 def provisionInfrastructure(name, dir) {
     try {
         echo "Starting provision of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
-
         // Initialize Terraform
         sh 'terraform init'
         
@@ -149,16 +115,13 @@ def provisionInfrastructure(name, dir) {
         } else {
             error "Plan file ${planFile} does not exist"
         }
-
     } catch (Exception e) {
         error "Error in provisioning ${name}: ${e.getMessage()}"
     }
 }
-
 def destroyInfrastructure(name, dir) {
     try {
         echo "Starting destruction of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
-
         // Initialize Terraform
         sh 'terraform init'
         
@@ -188,8 +151,8 @@ def destroyInfrastructure(name, dir) {
         } else {
             error "Plan file ${planFile} does not exist"
         }
-
     } catch (Exception e) {
         error "Error in destroying ${name}: ${e.getMessage()}"
     }
 }
+
