@@ -20,8 +20,13 @@ terraform {
 }
 
 ############# CONNECT AND GENERATE TEMPORARY AWS CREDENTIALS ################
+#provider "vault" {
+#    address = "http://vault.beitcloud.com:8200"
+#}
+
 provider "vault" {
-    address = "http://vault.beitcloud.com:8200"
+  address = "${VAULT_ADDR}"
+  token   = "${VAULT_TOKEN}"
 }
 
 #provider "vault" {}
