@@ -85,6 +85,7 @@ pipeline {
 }
 def provisionInfrastructure(name, dir) {
     try {
+        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'])  {
         echo "Starting provision of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
         // Initialize Terraform
         sh 'terraform init'
@@ -115,12 +116,14 @@ def provisionInfrastructure(name, dir) {
         } else {
             error "Plan file ${planFile} does not exist"
         }
+    }
     } catch (Exception e) {
         error "Error in provisioning ${name}: ${e.getMessage()}"
     }
 }
 def destroyInfrastructure(name, dir) {
     try {
+        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'])  {
         echo "Starting destruction of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
         // Initialize Terraform
         sh 'terraform init'
@@ -151,6 +154,7 @@ def destroyInfrastructure(name, dir) {
         } else {
             error "Plan file ${planFile} does not exist"
         }
+    } 
     } catch (Exception e) {
         error "Error in destroying ${name}: ${e.getMessage()}"
     }
