@@ -85,7 +85,7 @@ pipeline {
 }
 def provisionInfrastructure(name, dir) {
     try {
-        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'])  {
+        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
         echo "Starting provision of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
         // Initialize Terraform
         sh 'terraform init'
@@ -123,7 +123,7 @@ def provisionInfrastructure(name, dir) {
 }
 def destroyInfrastructure(name, dir) {
     try {
-        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'])  {
+        withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
         echo "Starting destruction of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
         // Initialize Terraform
         sh 'terraform init'
