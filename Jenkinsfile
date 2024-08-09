@@ -2,14 +2,14 @@ pipeline {
     agent any
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
-        //AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        //AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically approve changes')
     }
-        stages {
+    stages {
         stage('Clean Workspace') {
             steps {
                 script {
@@ -34,9 +34,7 @@ pipeline {
                     }
                     steps {
                         script {
-                           withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
                             def infrastructures = [
-                                [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo'],
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
@@ -51,8 +49,7 @@ pipeline {
                                     sh "ls -la"
                                     provisionInfrastructure(infra.name, infra.dir)
                                 }
-                             }
-                          }
+                            }
                         }
                     }
                 }
@@ -62,9 +59,7 @@ pipeline {
                     }
                     steps {
                         script {
-                           withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
                             def infrastructures = [
-                                [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo'],
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
@@ -81,7 +76,6 @@ pipeline {
                                     destroyInfrastructure(infra.name, infra.dir)
                                 }
                             }
-                          } 
                         }
                     }
                 }
