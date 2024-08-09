@@ -34,6 +34,7 @@ pipeline {
                     }
                     steps {
                         script {
+                          withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
                             def infrastructures = [
                                 [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo'],
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
@@ -50,7 +51,8 @@ pipeline {
                                     sh "ls -la"
                                     provisionInfrastructure(infra.name, infra.dir)
                                 }
-                            }
+                             }
+                          }
                         }
                     }
                 }
@@ -60,6 +62,7 @@ pipeline {
                     }
                     steps {
                         script {
+                          withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
                             def infrastructures = [
                                 [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo'],
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
@@ -78,6 +81,7 @@ pipeline {
                                     destroyInfrastructure(infra.name, infra.dir)
                                 }
                             }
+                          } 
                         }
                     }
                 }
