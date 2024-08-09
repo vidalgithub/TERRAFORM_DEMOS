@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
-        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        //AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        //AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
@@ -35,6 +35,7 @@ pipeline {
                     steps {
                         script {
                             def infrastructures = [
+                                [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo']
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
@@ -60,6 +61,7 @@ pipeline {
                     steps {
                         script {
                             def infrastructures = [
+                                [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo']
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
@@ -155,4 +157,3 @@ def destroyInfrastructure(name, dir) {
         error "Error in destroying ${name}: ${e.getMessage()}"
     }
 }
-
