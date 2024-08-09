@@ -61,7 +61,7 @@ pipeline {
                     steps {
                         script {
                             def infrastructures = [
-                                [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo']
+                                [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo'],
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
                                 [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
                                 [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
