@@ -9,6 +9,7 @@ pipeline {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically approve changes')
     }
+    
     stages {
         stage('Clean Workspace') {
             steps {
