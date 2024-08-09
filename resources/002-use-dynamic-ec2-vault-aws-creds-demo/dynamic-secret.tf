@@ -1,16 +1,14 @@
 ############# CONNECT AND GENERATE AWS CREDS ################
-# provider "vault" {
-#     address = "http://172.55.11.13:8200"
-# }
+provider "vault" {
+    address = "http://vault.beitcloud.com:8200"
+}
 
-provider "vault" {}
+#provider "vault" {}
 # First, set Vault server and token as env variables - see script.sh
 
 variable "cred_backend" {
   default = "aws-admin-backend"
-
 }
-
 variable "cred_role_name" {
   default = "aws-admin-role"
 }
