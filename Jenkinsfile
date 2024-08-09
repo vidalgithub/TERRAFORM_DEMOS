@@ -34,7 +34,7 @@ pipeline {
                     }
                     steps {
                         script {
-                          withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
+                           withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
                             def infrastructures = [
                                 [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo'],
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
@@ -62,7 +62,7 @@ pipeline {
                     }
                     steps {
                         script {
-                          withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'vaultUrl'], vaultSecrets: [[path: 'mycreds/vault-server1/vault-creds', secretValues: [[vaultKey: 'VAULT_TOKEN'], [vaultKey: 'VAULT_ADDR']]]]) {
+                           withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: 'http://vault.beitcloud.com:8200'], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
                             def infrastructures = [
                                 [name: '0-dynamic-aws-access', dir: '002-use-dynamic-ec2-vault-aws-creds-demo'],
                                 [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
