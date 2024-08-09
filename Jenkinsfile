@@ -2,6 +2,8 @@ pipeline {
     agent any
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
+        VAULT_ADDR = credentials('vaultAddr')
+        VAULT_TOKEN = credentials('vaultToken')
         //AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
         //AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
