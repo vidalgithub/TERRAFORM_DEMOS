@@ -54,9 +54,7 @@ stage('Process Infrastructures') {
                                terraform version
                                helm version
                                vault version
-                               helm repo list
                                helm repo update
-                               helm repo remove aws-eks
                                helm repo add aws-eks https://aws.github.io/eks-charts
                                helm repo list
                             '''
