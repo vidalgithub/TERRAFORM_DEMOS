@@ -134,9 +134,75 @@ pipeline {
 }
 
 def provisionInfrastructure(name, dir) {
-    // Your provision logic
+    try {
+        echo "Starting provision of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
+        // Initialize Terraform
+        sh 'terraform init'
+        
+        // Plan Terraform
+        sh 'terraform plan -out=tfplan'
+        sh 'terraform show -no-color tfplan > tfplan.txt'
+        
+        // Display the contents of the plan files
+        echo 'Contents of tfplan file:'
+        sh 'terraform show tfplan'
+        echo 'Contents of tfplan.txt file:'
+        sh 'cat tfplan.txt'
+        
+        // Read the plan file for approval
+        def planFile = "${env.RESOURCE_DIR}/${dir}/tfplan.txt"
+        if (fileExists(planFile)) {
+            def plan = readFile planFile
+            
+            // Approval stage
+            if (!params.autoApprove) {
+                input message: "Do you want to apply the Terraform plan for ${name}?",
+                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+            }
+            
+            // Apply the plan
+            sh 'terraform apply -input=false tfplan'
+        } else {
+            error "Plan file ${planFile} does not exist"
+        }
+    } catch (Exception e) {
+        error "Error in provisioning ${name}: ${e.getMessage()}"
+    }
 }
 
 def destroyInfrastructure(name, dir) {
-    // Your destroy logic
+    try {
+        echo "Starting destruction of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
+        // Initialize Terraform
+        sh 'terraform init'
+        
+        // Plan Destroy Terraform
+        sh 'terraform plan -destroy -out=tfplan-destroy'
+        sh 'terraform show -no-color tfplan-destroy > tfplan-destroy.txt'
+        
+        // Display the contents of the destroy plan files
+        echo 'Contents of tfplan-destroy file:'
+        sh 'terraform show tfplan-destroy'
+        echo 'Contents of tfplan-destroy.txt file:'
+        sh 'cat tfplan-destroy.txt'
+        
+        // Read the plan file for approval
+        def planFile = "${env.RESOURCE_DIR}/${dir}/tfplan-destroy.txt"
+        if (fileExists(planFile)) {
+            def plan = readFile planFile
+            
+            // Approval stage
+            if (!params.autoApprove) {
+                input message: "Do you want to destroy the Terraform resources for ${name}?",
+                      parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+            }
+            
+            // Destroy the plan
+            sh 'terraform apply -input=false tfplan-destroy'
+        } else {
+            error "Plan file ${planFile} does not exist"
+        }
+    } catch (Exception e) {
+        error "Error in destroying ${name}: ${e.getMessage()}"
+    }
 }
