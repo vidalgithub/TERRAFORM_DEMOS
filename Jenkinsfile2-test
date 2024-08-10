@@ -2,7 +2,7 @@ pipeline {
     //agent any
     agent {
         docker { 
-            image 'hashicorp/terraform:1.6.0' 
+            image 'vidaldocker/mastertf:kn1.0.0' 
             args '--entrypoint=""'  // Reset entrypoint
         }
     }
