@@ -3,7 +3,7 @@ pipeline {
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        //AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
