@@ -50,6 +50,8 @@ stage('Process Infrastructures') {
                     withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: env.vaultUrl], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
                         for (infra in infrastructures) {
                             echo "Provisioning ${infra.name} in ${infra.dir}"
+                            sh 'terraform version'
+                            sh 'helm version''
                             dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                 // Debug step: List the directory contents
                                 sh "ls -la"
@@ -78,6 +80,8 @@ stage('Process Infrastructures') {
                     withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: env.vaultUrl], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
                         for (infra in reverseInfrastructures) {
                             echo "Destroying ${infra.name} in ${infra.dir}"
+                            sh 'terraform version'
+                            sh 'helm version''
                             dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                 // Debug step: List the directory contents
                                 sh "ls -la"
