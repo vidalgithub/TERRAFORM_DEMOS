@@ -51,7 +51,7 @@ stage('Process Infrastructures') {
                         for (infra in infrastructures) {
                             echo "Provisioning ${infra.name} in ${infra.dir}"
                             sh 'terraform version'
-                            sh 'helm version''
+                            sh 'helm version'
                             dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                 // Debug step: List the directory contents
                                 sh "ls -la"
@@ -81,7 +81,7 @@ stage('Process Infrastructures') {
                         for (infra in reverseInfrastructures) {
                             echo "Destroying ${infra.name} in ${infra.dir}"
                             sh 'terraform version'
-                            sh 'helm version''
+                            sh 'helm version'
                             dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                 // Debug step: List the directory contents
                                 sh "ls -la"
