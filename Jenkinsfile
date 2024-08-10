@@ -82,7 +82,34 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            slackSend(channel: '#jenkins-pipelines', color: '#FFFF00', message: "Build started for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+        aborted {
+            slackSend(channel: '#jenkins-pipelines', color: '#FF0000', message: "Build aborted for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+        failure {
+            slackSend(channel: '#jenkins-pipelines', color: '#FF0000', message: "Build failed for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+        notBuilt {
+            slackSend(channel: '#jenkins-pipelines', color: '#AAAAAA', message: "Build not built for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+        success {
+            slackSend(channel: '#jenkins-pipelines', color: '#00FF00', message: "Build succeeded for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+        unstable {
+            slackSend(channel: '#jenkins-pipelines', color: '#FFFF00', message: "Build unstable for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+        regression {
+            slackSend(channel: '#jenkins-pipelines', color: '#FF0000', message: "Build regressed for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+        fixed {
+            slackSend(channel: '#jenkins-pipelines', color: '#00FF00', message: "Build back to normal for ${env.JOB_NAME} (${env.BUILD_NUMBER})")
+        }
+    }
 }
+
 def provisionInfrastructure(name, dir) {
     try {
         echo "Starting provision of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
@@ -119,6 +146,7 @@ def provisionInfrastructure(name, dir) {
         error "Error in provisioning ${name}: ${e.getMessage()}"
     }
 }
+
 def destroyInfrastructure(name, dir) {
     try {
         echo "Starting destruction of ${name} in directory ${env.RESOURCE_DIR}/${dir}"
