@@ -54,8 +54,8 @@ stage('Process Infrastructures') {
                                terraform version
                                helm version
                                vault version
-                               helm repo update
                                helm repo add aws-eks https://aws.github.io/eks-charts
+                               helm repo update
                                helm repo list
                             '''
                             dir("${env.RESOURCE_DIR}/${infra.dir}") {
