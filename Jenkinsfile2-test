@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker { 
-            image 'vidaldocker/mastertf:kn1.0.1' 
-            args '--entrypoint=""'  // Reset entrypoint
+            image 'vidaldocker/mastertf:kn1.0.2' 
+            //args '--entrypoint=""'  // Reset entrypoint
         }
     }
     environment {
@@ -60,9 +60,9 @@ pipeline {
                                        terraform version
                                        helm version
                                        vault version
-                                       helm repo add aws-eks https://aws.github.io/eks-charts
-                                       helm repo update
-                                       helm repo list
+                                       //helm repo add aws-eks https://aws.github.io/eks-charts
+                                       //helm repo update
+                                       //helm repo list
                                     '''
                                     dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                         sh "ls -la"
