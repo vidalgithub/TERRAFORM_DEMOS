@@ -1,9 +1,14 @@
 pipeline {
-    agent any
+    //agent any
+    agent {
+        docker { 
+            image 'hashicorp/terraform:1.6.0' 
+            args '--entrypoint=""'  // Reset entrypoint
+        }
+    }
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
-        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        vaultUrl = credentials('vaultUrl')
     }
     parameters {
         choice(name: 'ACTION', choices: ['APPLY', 'DESTROY'], description: 'Action to perform (APPLY/DESTROY)')
@@ -26,61 +31,66 @@ pipeline {
                 }
             }
         }
-        stage('Process Infrastructures') {
-            parallel {
-                stage('APPLY') {
-                    when {
-                        expression { return params.ACTION == 'APPLY' }
-                    }
-                    steps {
-                        script {
-                            def infrastructures = [
-                                [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
-                                [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
-                                [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
-                                [name: '4-Metrics-Server', dir: '27-tf-k8s-METRICS-SERVER-terraform-manifests'],
-                                [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
-                                [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
-                            ]
-                            for (infra in infrastructures) {
-                                echo "Provisioning ${infra.name} in ${infra.dir}"
-                                dir("${env.RESOURCE_DIR}/${infra.dir}") {
-                                    // Debug step: List the directory contents
-                                    sh "ls -la"
-                                    provisionInfrastructure(infra.name, infra.dir)
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('DESTROY') {
-                    when {
-                        expression { return params.ACTION == 'DESTROY' }
-                    }
-                    steps {
-                        script {
-                            def infrastructures = [
-                                [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
-                                [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
-                                [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
-                                [name: '4-Metrics-Server', dir: '27-tf-k8s-METRICS-SERVER-terraform-manifests'],
-                                [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
-                                [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
-                            ]
-                            def reverseInfrastructures = infrastructures.reverse()
-                            for (infra in reverseInfrastructures) {
-                                echo "Destroying ${infra.name} in ${infra.dir}"
-                                dir("${env.RESOURCE_DIR}/${infra.dir}") {
-                                    // Debug step: List the directory contents
-                                    sh "ls -la"
-                                    destroyInfrastructure(infra.name, infra.dir)
-                                }
+stage('Process Infrastructures') {
+    parallel {
+        stage('APPLY') {
+            when {
+                expression { return params.ACTION == 'APPLY' }
+            }
+            steps {
+                script {
+                    def infrastructures = [
+                        [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
+                        [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
+                        [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
+                        [name: '4-Metrics-Server', dir: '27-tf-k8s-METRICS-SERVER-terraform-manifests'],
+                        [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
+                        [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
+                    ]
+                    withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: env.vaultUrl], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
+                        for (infra in infrastructures) {
+                            echo "Provisioning ${infra.name} in ${infra.dir}"
+                            dir("${env.RESOURCE_DIR}/${infra.dir}") {
+                                // Debug step: List the directory contents
+                                sh "ls -la"
+                                provisionInfrastructure(infra.name, infra.dir)
                             }
                         }
                     }
                 }
             }
         }
+        stage('DESTROY') {
+            when {
+                expression { return params.ACTION == 'DESTROY' }
+            }
+            steps {
+                script {
+                    def infrastructures = [
+                        [name: '1-eks-private-cluster', dir: '10-eks-PRIVate-vpc-BG'],
+                        [name: '2-AWS-LB-Controller', dir: '11-aws-LBC-install-terraform-manifests'],
+                        [name: '3-EXT-DNS', dir: '14-externaldns-install-terraform-manifests'],
+                        [name: '4-Metrics-Server', dir: '27-tf-k8s-METRICS-SERVER-terraform-manifests'],
+                        [name: '5-Cluster-AutoScaler', dir: '26-tf-CA-cluster-autoscaler-install-terraform-manifests'],
+                        [name: '6-EBS-CSI-DRIVER', dir: '06-ebs-EBS-addon-terraform-manifests']
+                    ]
+                    def reverseInfrastructures = infrastructures.reverse()
+                    withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: env.vaultUrl], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
+                        for (infra in reverseInfrastructures) {
+                            echo "Destroying ${infra.name} in ${infra.dir}"
+                            dir("${env.RESOURCE_DIR}/${infra.dir}") {
+                                // Debug step: List the directory contents
+                                sh "ls -la"
+                                destroyInfrastructure(infra.name, infra.dir)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
     }
     post {
         always {
@@ -182,4 +192,74 @@ def destroyInfrastructure(name, dir) {
     } catch (Exception e) {
         error "Error in destroying ${name}: ${e.getMessage()}"
     }
+}
+
+
+###########################################################################################################################################################################################
+###########################################################################################################################################################################################
+#############################################################################################################################################################################################
+##############################################################################################################################################################################################
+
+pipeline {
+   //agent  any
+    agent {
+        docker { 
+            image 'hashicorp/terraform:1.6.0' 
+            args '--entrypoint=""'  // Reset entrypoint
+        }
+    }
+
+    parameters {
+        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
+    }
+    environment {
+        vaultUrl = credentials('vaultUrl')
+    }
+
+    stages {
+        stage('checkout') {
+            steps {
+                script{
+                        dir("terraform")
+                        {
+                            git "https://github.com/yeshwanthlm/Terraform-Jenkins.git"
+                        }
+                }
+            }
+        }
+        stage('Plan') {
+            steps {
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: env.vaultUrl], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
+                   sh 'pwd;cd terraform/ ; terraform init'
+                   sh "pwd;cd terraform/ ; terraform plan -out tfplan"
+                   sh 'pwd;cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
+                }
+            }
+        }
+        stage('Approval') {
+           when {
+               not {
+                   equals expected: true, actual: params.autoApprove
+               }
+           }
+
+           steps {
+               script {
+                    def plan = readFile 'terraform/tfplan.txt'
+                    input message: "Do you want to apply the plan?",
+                    parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+               }
+           }
+       }
+
+        stage('Apply') {
+            steps {
+                withVault(configuration: [disableChildPoliciesOverride: false, timeout: 60, vaultCredentialId: 'vaultCred', vaultUrl: env.vaultUrl], vaultSecrets: [[path: 'mycreds/aws-creds/vault-admin', secretValues: [[envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key_id'], [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_access_key']]]]) {
+                   sh "pwd;cd terraform/ ; terraform apply -input=false tfplan"
+                   sh "terraform version"
+                }
+            }
+        }
+    }
+
 }
