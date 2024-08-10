@@ -7,7 +7,7 @@ resource "helm_release" "external_dns" {
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
 
-  namespace = "default"     
+  namespace = "argocd"  #"default"     
 
   set {
     name = "image.repository"
