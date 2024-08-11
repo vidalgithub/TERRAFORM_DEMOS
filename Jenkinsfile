@@ -57,9 +57,9 @@ pipeline {
                                        export HELM_CACHE_HOME="${HELM_CACHE_HOME}"
                                        export HELM_CONFIG_HOME="${HELM_CONFIG_HOME}"
                                        export XDG_CACHE_HOME="${XDG_CACHE_HOME}"
-                                       terraform version
-                                       helm version
-                                       vault version
+                                       //terraform version
+                                       //helm version
+                                       //vault version
                                     '''
                                     dir("${env.RESOURCE_DIR}/${infra.dir}") {
                                         sh "ls -la"
