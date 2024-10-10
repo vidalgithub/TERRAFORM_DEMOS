@@ -45,7 +45,13 @@ resource "helm_release" "loadbalancer_controller" {
   set {
     name  = "clusterName"
     value = "${data.terraform_remote_state.eks.outputs.cluster_id}"
-  }    
+  }  
+
+  # Set the custom load balancer class here
+  set {
+    name  = "extraArgs"
+    value = "--load-balancer-class=alb"
+  }
     
 }
 
