@@ -1,5 +1,5 @@
-eks-ng-blue_version  = "1.29"
-eks-ng-green_version = "1.29"
+eks-ng-blue_version  = "1.30"
+eks-ng-green_version = "1.30"
 node_min             = "1"
 desired_node         = "1"
 node_max             = "6"
