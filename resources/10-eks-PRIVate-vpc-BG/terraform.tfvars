@@ -1,7 +1,7 @@
 # Generic Variables
 # aws_region = "us-east-1"
-# environment = "stag"
-# business_divsion = "hr"
+# environment = "stage"
+# business_divsion = "SAP"
 
 aws_region       = "us-east-1"
 environment      = "dev"
