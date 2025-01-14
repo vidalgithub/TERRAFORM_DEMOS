@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker { 
-            image 'vidaldocker/mastertf:kn1.0.2' 
+            image 'vidaldocker/mastertf:kn1.0.3' 
             //args '--entrypoint=""'  // Reset entrypoint
         }
     }
