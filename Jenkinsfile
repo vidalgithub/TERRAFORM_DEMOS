@@ -5,6 +5,9 @@ pipeline {
             //args '--entrypoint=""'  // Reset entrypoint
         }
     }
+    options {
+        ansiColor('xterm')
+    }
     environment {
         RESOURCE_DIR = "${env.WORKSPACE}/resources"
         vaultUrl = credentials('vaultUrl')
