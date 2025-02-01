@@ -1,7 +1,7 @@
 eks-ng-blue_version  = "1.30"
 eks-ng-green_version = "1.30"
 node_min             = "1"
-desired_node         = "1"
+desired_node         = "2"
 node_max             = "6"
 
 blue_node_color  = "blue"
